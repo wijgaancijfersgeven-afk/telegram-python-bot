@@ -1,6 +1,6 @@
-# [Project name]
+# Telegram Python File Bot
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Telegram üzerinden yetkili kullanıcıların Python dosyalarını yükleyip yönetmesini ve kontrollü şekilde çalıştırmasını sağlayan bot servisi.
 
 ## Run & Operate
 
@@ -22,15 +22,23 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/src/telegramBot.ts` — Telegram polling, dosya yönetimi ve Python çalıştırma akışı
+- `artifacts/api-server/src/index.ts` — HTTP sunucusunu ve botu başlatır
+- `RAILWAY.md` — Railway kurulum ve kalıcı Volume ayarları
+- `railway.json` — Railway build, start ve healthcheck ayarları
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Telegram webhook yerine long polling kullanılır; Railway'de public webhook URL'si zorunlu değildir.
+- Dosyalar Telegram chat ID'sine göre ayrı klasörlerde saklanır.
+- Kullanıcı güvenliği için yalnızca `TELEGRAM_ADMIN_IDS` listesindeki kullanıcılar işlenir.
+- Python süreçleri 20 saniye ve 12.000 karakter çıktı sınırıyla çalıştırılır.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Yetkili kullanıcı `.py` dosyası göndererek dosyayı saklar ve otomatik çalıştırır.
+- Dosya listesi, tekrar çalıştırma ve silme komutları vardır.
+- Railway Volume ile dosyalar yeniden başlatmalar arasında korunur.
 
 ## User preferences
 
