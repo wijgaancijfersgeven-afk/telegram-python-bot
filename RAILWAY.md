@@ -17,6 +17,7 @@ Railway projesinde bu repository için aşağıdaki değişkenleri tanımlayın:
 - `TELEGRAM_BOT_TOKEN`: BotFather tarafından verilen bot token'ı
 - `TELEGRAM_ADMIN_IDS`: Yetkili Telegram kullanıcı ID'leri; birden fazla değer virgülle ayrılır
 - `DATA_DIR`: `/data`
+- `DATABASE_URL`: Railway PostgreSQL servisinin bağlantı adresi
 
 Start command:
 
@@ -27,6 +28,8 @@ pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/api-se
 Railway'de bir **Volume** oluşturup `/data` yoluna bağlayın. Volume olmadan yüklenen dosyalar servis yeniden başlatıldığında veya yeniden dağıtıldığında kaybolabilir.
 
 `nixpacks.toml`, Railway çalışma ortamına Python 3.12'yi ekler; botun `python3` çalıştırıcısı bu sayede hazır olur.
+
+Kullanıcılar, dosyalar, mesaj geçmişi, görevler, erişim ayarları ve yönetim kayıtları PostgreSQL'de tutulur. Bu nedenle Railway projesine bir PostgreSQL servisi ekleyip bağlantı adresini `DATABASE_URL` olarak tanımlayın.
 
 Healthcheck path:
 
