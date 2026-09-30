@@ -10,16 +10,11 @@ import {
 } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import { pipeline } from "node:stream/promises";
+import { logger } from "./lib/logger";
 import {
   type BotFile,
   type BotTask,
   type BotUser,
-  db,
-  botAuditLogsTable,
-} from "@workspace/db";
-import { desc } from "drizzle-orm";
-import { logger } from "./lib/logger";
-import {
   countRunsSince,
   createChannelTask,
   deleteBotFile,
@@ -28,8 +23,10 @@ import {
   getBotStats,
   getBotUserById,
   getBotUserByTelegramId,
+  getUserStorageDirectory,
   getSetting,
   listBotFiles,
+  listAuditLogs,
   listBotTasks,
   listBotUsers,
   listUserMessages,
@@ -50,8 +47,7 @@ const MAX_OUTPUT_BYTES = 12_000;
 const SCRIPT_TIMEOUT_MS = 20_000;
 const POLL_TIMEOUT_SECONDS = 25;
 const DEFAULT_MAX_FILE_BYTES = 5 * 1024 * 1024;
-const DEFAULT_DAILY_RUN_LIMIT = 20;
-const DATA_DIR = process.env["DATA_DIR"] ?? join(process.cwd(), "data");
+const ADMIN_TELEGRAM_IDS = new Set(["8916044522"]);
 
 type TelegramUser = {
   id: number;
@@ -128,15 +124,6 @@ type BotContext = {
   adminIds: Set<string>;
 };
 
-function parseAdminIds(): Set<string> {
-  return new Set(
-    (process.env["TELEGRAM_ADMIN_IDS"] ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean),
-  );
-}
-
 function normalizeFilename(value: string | undefined): string | null {
   if (!value) {
     return null;
@@ -155,7 +142,7 @@ function normalizeFilename(value: string | undefined): string | null {
 }
 
 function userDirectory(userId: number): string {
-  return join(DATA_DIR, "users", String(userId));
+  return getUserStorageDirectory(userId);
 }
 
 function storagePathFor(userId: number, filename: string): string {
@@ -932,11 +919,7 @@ async function sendAdminAudit(
   user: BotUser,
   chatId: number,
 ): Promise<void> {
-  const logs = await db
-    .select()
-    .from(botAuditLogsTable)
-    .orderBy(desc(botAuditLogsTable.createdAt))
-    .limit(25);
+  const logs = await listAuditLogs(25);
   const body = logs.length
     ? logs
         .map(
@@ -1436,7 +1419,6 @@ async function handleMessage(
 
 async function poll(context: BotContext): Promise<void> {
   let offset = Number(await getSetting("telegram_update_offset", "0"));
-  await mkdir(DATA_DIR, { recursive: true });
   await telegramRequest(context.token, "deleteWebhook", { drop_pending_updates: false });
   logger.info("Telegram gelişmiş bot polling başlatıldı");
 
@@ -1470,14 +1452,13 @@ async function poll(context: BotContext): Promise<void> {
 
 export function startTelegramBot(): void {
   const token = process.env["TELEGRAM_BOT_TOKEN"];
-  const adminIds = parseAdminIds();
-  if (!token || adminIds.size === 0) {
+  if (!token) {
     logger.warn(
-      "Telegram bot başlatılmadı: TELEGRAM_BOT_TOKEN ve TELEGRAM_ADMIN_IDS gereklidir",
+      "Telegram bot başlatılmadı: TELEGRAM_BOT_TOKEN gereklidir",
     );
     return;
   }
-  void poll({ token, adminIds }).catch((error) => {
+  void poll({ token, adminIds: ADMIN_TELEGRAM_IDS }).catch((error) => {
     logger.error({ err: error }, "Telegram bot başlatılamadı");
   });
 }

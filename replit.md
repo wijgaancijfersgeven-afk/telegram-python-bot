@@ -8,14 +8,13 @@ Telegram üzerinden yetkili kullanıcıların Python dosyalarını yükleyip yö
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `TELEGRAM_BOT_TOKEN` — BotFather token
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
+- DB: SQLite (`node:sqlite`) stored in the data directory
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
@@ -25,15 +24,15 @@ Telegram üzerinden yetkili kullanıcıların Python dosyalarını yükleyip yö
 - `artifacts/api-server/src/telegramBot.ts` — Telegram polling, kullanıcı paneli, admin paneli, görevler, geçmiş ve Python çalıştırma akışı
 - `artifacts/api-server/src/telegramStore.ts` — Telegram botu için kullanıcı, dosya, mesaj, görev ve audit veritabanı erişimi
 - `artifacts/api-server/src/index.ts` — HTTP sunucusunu ve botu başlatır
-- `lib/db/src/schema/telegram.ts` — Telegram botu PostgreSQL tabloları
+- `artifacts/api-server/src/telegramStore.ts` — SQLite şeması ve Telegram botu veri erişimi
 - `RAILWAY.md` — Railway kurulum ve kalıcı Volume ayarları
 - `railway.json` — Railway build, start ve healthcheck ayarları
 
 ## Architecture decisions
 
 - Telegram webhook yerine long polling kullanılır; Railway'de public webhook URL'si zorunlu değildir.
-- Dosyalar kullanıcıya özel Volume klasörlerinde, yönetim verileri PostgreSQL'de tutulur.
-- Kullanıcı güvenliği için yalnızca `TELEGRAM_ADMIN_IDS` listesindeki kullanıcılar işlenir.
+- Dosyalar ve yönetim verileri SQLite dosyası ile kullanıcıya özel Volume klasörlerinde tutulur.
+- Ana yönetici ID'si bot kodunda sabitlenmiştir; çalışma zamanında yalnızca bot tokenı gerekir.
 - Python süreçleri 20 saniye ve 12.000 karakter çıktı sınırıyla çalıştırılır.
 - Kullanıcı erişimi `open`, `approval` veya `closed` modlarından biriyle yönetilir.
 
