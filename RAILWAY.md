@@ -16,7 +16,7 @@ Railway projesinde bu repository için aşağıdaki değişkenleri tanımlayın:
 
 - `TELEGRAM_BOT_TOKEN`: BotFather tarafından verilen bot token'ı
 
-Start command:
+Railpack build ve start ayarları repository kökündeki `railpack.json` dosyasında tanımlıdır. Kullanılan start command:
 
 ```text
 pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/api-server run start
@@ -24,7 +24,7 @@ pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/api-se
 
 Railway'de bir **Volume** oluşturup `/data` yoluna bağlayın. SQLite veritabanı ve yüklenen dosyalar bu Volume altında tutulur. Volume olmadan kullanıcılar, görevler, geçmiş ve dosyalar servis yeniden başlatıldığında veya yeniden dağıtıldığında kaybolabilir.
 
-`nixpacks.toml`, Railway çalışma ortamına Python 3.12'yi ekler; botun `python3` çalıştırıcısı bu sayede hazır olur.
+`railpack.json`, Railway çalışma ortamına Python 3.12'yi ekler; botun `python3` çalıştırıcısı bu sayede hazır olur. `railway.json` içindeki builder `RAILPACK` olarak ayarlanmıştır.
 
 Bot, Node.js'in yerleşik SQLite desteğini kullanır. Admin ID kod içine sabitlenmiştir; Railway'de `TELEGRAM_ADMIN_IDS`, `DATABASE_URL` veya `DATA_DIR` eklemeniz gerekmez.
 
