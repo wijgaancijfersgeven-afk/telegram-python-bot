@@ -1,7 +1,8 @@
 {
   "$schema": "https://schema.railpack.com",
   "packages": {
-    "python": "3.12"
+    "python": "3.12",
+    "pnpm": "10"
   },
   "deploy": {
     "startCommand": "pnpm --filter @workspace/api-server run start"
