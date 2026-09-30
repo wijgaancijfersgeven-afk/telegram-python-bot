@@ -1,0 +1,1 @@
+- [GitHub push authentication](github-push.md) — use a transient Basic header when API auth works but HTTPS Bearer push fails.
